@@ -38,6 +38,6 @@ jobs:
         with:
           commit_message: '[BOT] Auto-update fund data'
           file_pattern: 'frontend/public/data/* data/*' # 监控这两个目录下的文件变化
-          commit_user_name: Kimi Agent
-          commit_user_email: kimi-agent@example.com
-          commit_author: Kimi Agent <kimi-agent@example.com>
+          commit_user_name: sherryxia2016
+          commit_user_email: sherryxia2016@users.noreply.github.com
+          commit_author: sherryxia2016 <sherryxia2016@users.noreply.github.com>
