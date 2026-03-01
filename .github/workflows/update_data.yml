@@ -1,0 +1,43 @@
+name: Update Fund Data
+
+on:
+  schedule:
+    # 每天UTC时间16:00运行 (北京时间 00:00)
+    - cron: '0 16 * * *'
+  workflow_dispatch: # 允许手动触发
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          cd scripts
+          pip install -r requirements.txt
+
+      - name: Fetch latest data
+        run: |
+          cd scripts
+          python fetch_fund_data.py
+
+      - name: Convert data to JSON
+        run: |
+          cd scripts
+          python convert_csv_to_json.py
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: '[BOT] Auto-update fund data'
+          file_pattern: 'frontend/public/data/* data/*' # 监控这两个目录下的文件变化
+          commit_user_name: Kimi Agent
+          commit_user_email: kimi-agent@example.com
+          commit_author: Kimi Agent <kimi-agent@example.com>
