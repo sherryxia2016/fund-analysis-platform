@@ -24,7 +24,7 @@ os.makedirs(DATA_DIR, exist_ok=True)
 print(f"数据将保存到: {DATA_DIR}")
 
 # 测试模式配置
-TEST_MODE = True  # 设置为 False 进行完整运行
+TEST_MODE = False  # 设置为 False 进行完整运行
 TEST_FUND_COUNT = 3  # 测试模式下的基金数量
 
 @lru_cache(maxsize=1000)
@@ -213,19 +213,16 @@ def fetch_fund_nav_for_new(new_funds_df, daily_df=None, max_workers=5):
     all_fund_nav = {}
     failed_funds = []
     
-    # 使用线程池并行获取
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures = {executor.submit(fetch_single_fund_nav, fc, True): fc for fc in fund_codes}
-        
-        for i, future in enumerate(as_completed(futures)):
-            fund_code, nav_data, error = future.result()
-            if error is None and nav_data is not None and len(nav_data) > 0:
-                all_fund_nav[fund_code] = nav_data
-                print(f"[{i+1}/{len(fund_codes)}] (新) 获取基金 {fund_code}...({len(nav_data)} 条)")
-            else:
-                print(f"[{i+1}/{len(fund_codes)}] (新) 获取基金 {fund_code}...失败")
-                failed_funds.append(fund_code)
-            time.sleep(0.1)  # 控制请求频率
+    # --- 使用单线程顺序获取，避免底层库并发bug ---
+    for i, fund_code in enumerate(fund_codes):
+        _fund_code, nav_data, error = fetch_single_fund_nav(fund_code, True)
+        if error is None and nav_data is not None and len(nav_data) > 0:
+            all_fund_nav[fund_code] = nav_data
+            print(f"[{i+1}/{len(fund_codes)}] (新) 获取基金 {fund_code}...({len(nav_data)} 条)")
+        else:
+            print(f"[{i+1}/{len(fund_codes)}] (新) 获取基金 {fund_code}...失败")
+            failed_funds.append(fund_code)
+        time.sleep(0.1)  # 控制请求频率
 
     print(f"\n成功为 {len(all_fund_nav)} 只新基金获取了数据")
     return all_fund_nav, failed_funds
