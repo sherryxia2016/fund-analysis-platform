@@ -22,3 +22,4 @@ __pycache__/
 
 # macOS
 .DS_Store
+frontend/public/data/fund_info.json
