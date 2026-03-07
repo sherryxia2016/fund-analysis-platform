@@ -1,9 +1,8 @@
-name: Update Fund Data
+name: Update Fund Data and Upload to Vercel Blob
 
 on:
   schedule:
-    # 每天UTC时间16:00运行 (北京时间 00:00)
-    - cron: '0 16 * * *'
+    - cron: '0 16 * * *' # 北京时间午夜
   workflow_dispatch: # 允许手动触发
 
 jobs:
@@ -16,28 +15,22 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.12'
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: |
-          cd scripts
           pip install -r requirements.txt
 
-      - name: Fetch latest data
+      - name: Fetch latest fund data
         run: |
-          cd scripts
-          python fetch_fund_data.py
-
+          python scripts/fetch_fund_data.py
+      
       - name: Convert data to JSON
         run: |
-          cd scripts
-          python convert_csv_to_json.py
+          python scripts/convert_csv_to_json.py
 
-      - name: Commit and push changes
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: '[BOT] Auto-update fund data'
-          file_pattern: 'frontend/public/data/* data/*' # 监控这两个目录下的文件变化
-          commit_user_name: sherryxia2016
-          commit_user_email: sherryxia2016@users.noreply.github.com
-          commit_author: sherryxia2016 <sherryxia2016@users.noreply.github.com>
+      - name: Upload data to Vercel Blob
+        env:
+          VERCEL_BLOB_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+        run: |
+          vercel-blob put frontend/public/data/fund_info.json --token "$VERCEL_BLOB_TOKEN" --public

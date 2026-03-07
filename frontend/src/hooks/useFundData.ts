@@ -1,6 +1,9 @@
 import { useState, useEffect, type Dispatch, type SetStateAction } from 'react';
 import type { FundInfo, FundNav, SectorIndex, ProfitStats, SectorTop5Item } from '@/types/fund';
 
+// 从 Vercel Blob 加载数据的固定 URL 前缀
+const DATA_URL_PREFIX = 'https://pfund-analysis-platform.vercel.app';
+
 interface UseFundDataReturn {
   fundInfo: FundInfo[];
   fundNavData: Record<string, FundNav[]>;
@@ -47,7 +50,7 @@ export function useFundData(): UseFundDataReturn {
         const timestamp = new Date().getTime();
         
         // 加载基金信息
-        const fundInfoRes = await fetch(`/data/fund_info.json?t=${timestamp}`);
+        const fundInfoRes = await fetch(`${DATA_URL_PREFIX}/fund_info.json?t=${timestamp}`);
         const rawFundInfo: FundInfo[] = await fundInfoRes.json();
         const parsedFundInfo = rawFundInfo.filter(
           fund => fund.盈利概率 != null && fund.平均收益率 != null && fund.基金规模 != null
@@ -55,27 +58,27 @@ export function useFundData(): UseFundDataReturn {
         setFundInfo(parsedFundInfo);
 
         // 加载净值数据
-        const navRes = await fetch(`/data/fund_nav_data.json?t=${timestamp}`);
+        const navRes = await fetch(`${DATA_URL_PREFIX}/fund_nav_data.json?t=${timestamp}`);
         const navData = await navRes.json();
         setFundNavData(navData);
 
         // 加载板块指数
-        const sectorRes = await fetch(`/data/sector_indices.json?t=${timestamp}`);
+        const sectorRes = await fetch(`${DATA_URL_PREFIX}/sector_indices.json?t=${timestamp}`);
         const sectorData = await sectorRes.json();
         setSectorIndices(sectorData);
 
         // 加载一级板块指数
-        const primarySectorRes = await fetch(`/data/primary_sector_indices.json?t=${timestamp}`);
+        const primarySectorRes = await fetch(`${DATA_URL_PREFIX}/primary_sector_indices.json?t=${timestamp}`);
         const primarySectorData = await primarySectorRes.json();
         setPrimarySectorIndices(primarySectorData);
 
         // 加载板块Top5
-        const top5Res = await fetch(`/data/sector_top5.json?t=${timestamp}`);
+        const top5Res = await fetch(`${DATA_URL_PREFIX}/sector_top5.json?t=${timestamp}`);
         const top5Data = await top5Res.json();
         setSectorTop5(top5Data);
 
         // 加载盈利概率
-        const probRes = await fetch(`/data/profit_probability.json?t=${timestamp}`);
+        const probRes = await fetch(`${DATA_URL_PREFIX}/profit_probability.json?t=${timestamp}`);
         const probData = await probRes.json();
         setProfitProbability(probData);
 

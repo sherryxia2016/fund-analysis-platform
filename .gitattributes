@@ -1,6 +1,0 @@
-data/*.json filter=lfs diff=lfs merge=lfs -text
-data/*.csv filter=lfs diff=lfs merge=lfs -text
-frontend/public/data/*.json filter=lfs diff=lfs merge=lfs -text
-frontend/public/data/*.csv filter=lfs diff=lfs merge=lfs -text
-frontend/package.json !text !filter !merge !diff
-frontend/package-lock.json !text !filter !merge !diff
