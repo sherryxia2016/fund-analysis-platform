@@ -1,8 +1,9 @@
-name: Update Fund Data and Upload to Vercel Blob
+name: Update Fund Data via Batch Processing
 
 on:
   schedule:
-    - cron: '0 16 * * *' # 北京时间午夜
+    # 每天运行多次（例如每小时一次），以逐步完成所有基金的处理
+    - cron: '0 * * * *'
   workflow_dispatch: # 允许手动触发
 
 jobs:
@@ -16,21 +17,22 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
 
       - name: Install Python dependencies
         run: |
           pip install -r requirements.txt
-
-      - name: Fetch latest fund data
-        run: |
-          python scripts/fetch_fund_data.py
       
-      - name: Convert data to JSON
-        run: |
-          python scripts/convert_csv_to_json.py
+      - name: Install Vercel Blob CLI
+        run: npm install -g @vercel/blob
 
-      - name: Upload data to Vercel Blob
+      - name: Run one batch of fund data processing
         env:
-          VERCEL_BLOB_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+          CI: true # 告诉脚本在CI环境中运行，只处理一个批次
         run: |
-          vercel-blob put frontend/public/data/fund_info.json --token "$VERCEL_BLOB_TOKEN" --public
+          python3 scripts/fetch_fund_data.py

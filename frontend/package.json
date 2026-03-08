@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "./node_modules/.bin/vite",
-    "build": "pip3 install -r ../requirements.txt --break-system-packages && python3 ../scripts/convert_csv_to_json.py && tsc -b && vite build",
+    "build": "tsc -b && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
