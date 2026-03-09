@@ -15,6 +15,7 @@ import warnings
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import lru_cache
 import requests
+from vercel_blob import put
 
 warnings.filterwarnings('ignore')
 
@@ -53,6 +54,16 @@ def download_from_blob(filename):
     except requests.exceptions.RequestException as e:
         print(f"下载时发生网络错误: {e}")
         return None
+
+def upload_to_blob(local_filepath, blob_filename):
+    """使用 vercel-blob Python 库上传文件"""
+    print(f"正在上传 {local_filepath} 到 Vercel Blob as {blob_filename}...")
+    try:
+        with open(local_filepath, 'rb') as f:
+            blob_result = put(blob_filename, f, options={'access': 'public'})
+            print(f"上传成功: {blob_result['url']}")
+    except Exception as e:
+        print(f"上传失败: {e}")
 
 # --- 数据处理函数 (与之前版本基本相同) ---
 
@@ -294,8 +305,8 @@ def main():
         print(f"本批成功 {len(fund_nav_batch.keys())}, 失败 {len(failed_codes)}")
         print(f"总进度: {len(progress['processed_funds'])} / {len(all_fund_codes)}")
 
-        # f. 保存文件到本地
-        print("正在保存文件到本地...")
+        # f. 保存并上传
+        print("正在保存并上传更新...")
         
         # 清理数据以便JSON序列化
         final_df_cleaned = clean_for_json(existing_fund_info_df)
@@ -303,13 +314,14 @@ def main():
         # 保存 fund_info.json
         local_fund_info_path = os.path.join(DATA_DIR, FUND_INFO_FILENAME)
         final_df_cleaned.to_json(local_fund_info_path, orient='records', force_ascii=False, indent=4)
-        print(f"已生成: {local_fund_info_path}")
+        upload_to_blob(local_fund_info_path, FUND_INFO_FILENAME)
 
         # 保存 progress.json
         local_progress_path = os.path.join(DATA_DIR, PROGRESS_FILENAME)
         with open(local_progress_path, 'w', encoding='utf-8') as f:
             json.dump(progress, f, indent=4)
-        print(f"已生成: {local_progress_path}")
+        # 再次打开以二进制模式读取并上传
+        upload_to_blob(local_progress_path, PROGRESS_FILENAME)
 
         # 更新待处理列表
         codes_to_process = codes_to_process[len(current_batch_codes):]
