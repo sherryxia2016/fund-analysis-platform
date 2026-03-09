@@ -60,7 +60,8 @@ def upload_to_blob(local_filepath, blob_filename):
     print(f"正在上传 {local_filepath} 到 Vercel Blob as {blob_filename}...")
     try:
         with open(local_filepath, 'rb') as f:
-            blob_result = put(blob_filename, f, options={'access': 'public'})
+            body = f.read()
+            blob_result = put(blob_filename, body, options={'access': 'public'})
             print(f"上传成功: {blob_result['url']}")
     except Exception as e:
         print(f"上传失败: {e}")
