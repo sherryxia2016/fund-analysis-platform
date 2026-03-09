@@ -39,6 +39,5 @@ jobs:
         env:
           BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
         run: |
-          npm install @vercel/blob
-          ./node_modules/.bin/vercel-blob put fund_info.json --token "${{ secrets.BLOB_READ_WRITE_TOKEN }}" --public --body data/fund_info.json
-          ./node_modules/.bin/vercel-blob put progress.json --token "${{ secrets.BLOB_READ_WRITE_TOKEN }}" --public --body data/progress.json
+          npx --package @vercel/blob -c 'vercel-blob put fund_info.json --token "${{ secrets.BLOB_READ_WRITE_TOKEN }}" --public --body data/fund_info.json'
+          npx --package @vercel/blob -c 'vercel-blob put progress.json --token "${{ secrets.BLOB_READ_WRITE_TOKEN }}" --public --body data/progress.json'
