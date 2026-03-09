@@ -18,13 +18,26 @@ jobs:
         with:
           python-version: '3.12'
       
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
       - name: Install Python dependencies
         run: |
           pip install -r requirements.txt
 
-      - name: Run data processing and upload script
+      - name: Run one batch of fund data processing
         env:
           BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
           CI: true # 告诉脚本在CI环境中运行，只处理一个批次
         run: |
           python3 scripts/fetch_fund_data.py
+
+      - name: Install and Upload to Vercel Blob
+        env:
+          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+        run: |
+          npm install -g @vercel/blob
+          vercel-blob put fund_info.json --token "${{ secrets.BLOB_READ_WRITE_TOKEN }}" --public --body data/fund_info.json
+          vercel-blob put progress.json --token "${{ secrets.BLOB_READ_WRITE_TOKEN }}" --public --body data/progress.json
