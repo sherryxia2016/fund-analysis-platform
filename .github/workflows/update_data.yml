@@ -40,9 +40,9 @@ jobs:
           BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
         run: |
           npm install @vercel/blob
-          echo "--- Listing files in node_modules/.bin/ ---"
-          ls -l ./node_modules/.bin/
+          echo "--- npm bin path is: $(npm bin) ---"
+          ls -l $(npm bin)
           echo "--- Uploading fund_info.json ---"
-          ./node_modules/.bin/vercel-blob put fund_info.json --token "${{ secrets.BLOB_READ_WRITE_TOKEN }}" --public --body data/fund_info.json
+          $(npm bin)/vercel-blob put fund_info.json --token "${{ secrets.BLOB_READ_WRITE_TOKEN }}" --public --body data/fund_info.json
           echo "--- Uploading progress.json ---"
-          ./node_modules/.bin/vercel-blob put progress.json --token "${{ secrets.BLOB_READ_WRITE_TOKEN }}" --public --body data/progress.json
+          $(npm bin)/vercel-blob put progress.json --token "${{ secrets.BLOB_READ_WRITE_TOKEN }}" --public --body data/progress.json
