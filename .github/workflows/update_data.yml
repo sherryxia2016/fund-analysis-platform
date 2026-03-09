@@ -26,9 +26,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           pip install -r requirements.txt
-      
-      - name: Install Vercel Blob CLI
-        run: npm install -g @vercel/blob
+
 
       - name: Run one batch of fund data processing
         env:

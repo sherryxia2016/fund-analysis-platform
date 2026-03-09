@@ -72,7 +72,7 @@ def upload_to_blob(local_filepath, blob_filename):
     print(f"正在上传 {local_filepath} 到 Vercel Blob as {blob_filename}...")
     try:
         command = [
-            'vercel-blob', 'put', blob_filename,
+            'npx', 'vercel-blob', 'put', blob_filename,
             '--token', token,
             '--public',
             '--body', local_filepath
