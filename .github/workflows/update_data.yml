@@ -26,9 +26,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           pip install -r requirements.txt
-      
-      - name: Install Vercel Blob CLI
-        run: npm install -g @vercel/blob
+
 
       - name: Run one batch of fund data processing
         env:
@@ -36,3 +34,10 @@ jobs:
           CI: true # 告诉脚本在CI环境中运行，只处理一个批次
         run: |
           python3 scripts/fetch_fund_data.py
+
+      - name: Upload data to Vercel Blob
+        env:
+          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+        run: |
+          npx vercel-blob put fund_info.json --token "${{ secrets.BLOB_READ_WRITE_TOKEN }}" --public --body data/fund_info.json
+          npx vercel-blob put progress.json --token "${{ secrets.BLOB_READ_WRITE_TOKEN }}" --public --body data/progress.json

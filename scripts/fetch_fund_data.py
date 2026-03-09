@@ -15,7 +15,6 @@ import warnings
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import lru_cache
 import requests
-import subprocess
 
 warnings.filterwarnings('ignore')
 
@@ -36,14 +35,6 @@ print(f"批处理大小: {BATCH_SIZE}")
 
 # --- Vercel Blob 辅助函数 ---
 
-def get_blob_token():
-    """从环境变量获取 Vercel Blob Token"""
-    token = os.environ.get('BLOB_READ_WRITE_TOKEN')
-    if not token:
-        print("错误: 缺少环境变量 BLOB_READ_WRITE_TOKEN")
-        return None
-    return token
-
 def download_from_blob(filename):
     """从 Vercel Blob 下载文件"""
     url = f"{BLOB_BASE_URL}{filename}"
@@ -62,40 +53,6 @@ def download_from_blob(filename):
     except requests.exceptions.RequestException as e:
         print(f"下载时发生网络错误: {e}")
         return None
-
-def upload_to_blob(local_filepath, blob_filename):
-    """使用 vercel-blob CLI 上传文件到 Vercel Blob"""
-    token = get_blob_token()
-    if not token:
-        return False
-    
-    print(f"正在上传 {local_filepath} 到 Vercel Blob as {blob_filename}...")
-    try:
-        command = [
-            'vercel-blob', 'put', blob_filename,
-            '--token', token,
-            '--public',
-            '--body', local_filepath
-        ]
-        
-        # 使用 subprocess.run 来执行命令
-        result = subprocess.run(command, capture_output=True, text=True, check=True)
-        
-        print(f"上传成功: {blob_filename}")
-        print(f"Vercel CLI 输出: {result.stdout}")
-        return True
-    except FileNotFoundError:
-        print("错误: 'vercel-blob' command not found. 请确保 @vercel/blob CLI 已经安装并位于 PATH 中。")
-        return False
-    except subprocess.CalledProcessError as e:
-        print(f"上传失败: {blob_filename}")
-        print(f"返回码: {e.returncode}")
-        print(f"标准输出: {e.stdout}")
-        print(f"标准错误: {e.stderr}")
-        return False
-    except Exception as e:
-        print(f"上传时发生未知错误: {e}")
-        return False
 
 # --- 数据处理函数 (与之前版本基本相同) ---
 
@@ -337,8 +294,8 @@ def main():
         print(f"本批成功 {len(fund_nav_batch.keys())}, 失败 {len(failed_codes)}")
         print(f"总进度: {len(progress['processed_funds'])} / {len(all_fund_codes)}")
 
-        # f. 保存并上传
-        print("正在保存并上传更新...")
+        # f. 保存文件到本地
+        print("正在保存文件到本地...")
         
         # 清理数据以便JSON序列化
         final_df_cleaned = clean_for_json(existing_fund_info_df)
@@ -346,13 +303,13 @@ def main():
         # 保存 fund_info.json
         local_fund_info_path = os.path.join(DATA_DIR, FUND_INFO_FILENAME)
         final_df_cleaned.to_json(local_fund_info_path, orient='records', force_ascii=False, indent=4)
-        upload_to_blob(local_fund_info_path, FUND_INFO_FILENAME)
+        print(f"已生成: {local_fund_info_path}")
 
         # 保存 progress.json
         local_progress_path = os.path.join(DATA_DIR, PROGRESS_FILENAME)
         with open(local_progress_path, 'w', encoding='utf-8') as f:
             json.dump(progress, f, indent=4)
-        upload_to_blob(local_progress_path, PROGRESS_FILENAME)
+        print(f"已生成: {local_progress_path}")
 
         # 更新待处理列表
         codes_to_process = codes_to_process[len(current_batch_codes):]
